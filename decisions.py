@@ -68,7 +68,7 @@ class decision_maker(Node):
 
         # hint: if you set the self.goal in here, you can bypass the rviz goal selector
         # this can be useful if you don't want to use the map
-
+        self.goal = [6, 10]
     
     def designPathFor(self, msg: PoseStamped):
         
@@ -163,7 +163,7 @@ def main(args=None):
     if args.motion == "point":
         DM=decision_maker(Twist, "/cmd_vel", 10, motion_type=POINT_PLANNER)
     elif args.motion == "trajectory":
-        DM=decision_maker(Twist, "/cmd_vel", 10, motion_type=TRAJECTORY_PLANNER)
+        DM=decision_maker(Twist, "/cmd_vel", 10, motion_type=RRT_STAR_PLANNER)
     else:
         print("invalid motion type", file=sys.stderr)
 

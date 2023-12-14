@@ -68,9 +68,16 @@ class localization(Node):
                         0,
                         0])        
 
-            Q=0.1*np.eye(6)
-            R=0.4*np.eye(4)
-            P=Q.copy()
+            # Given PQR values
+            # Q=0.1*np.eye(6)
+            # R=0.4*np.eye(4)
+            # P=Q.copy()
+
+            # My PQR Values
+            # TODO: Enter my own PQR values
+            Q=0.2*np.identity(6) 
+            R=0.8*np.identity(4)
+            P=np.zeros(6,6) # initial covariance is 0 because we have known starting state
             
             self.kf=kalman_filter(P,Q,R, x)
             self.kalmanInitialized = True

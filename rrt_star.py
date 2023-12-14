@@ -42,6 +42,7 @@ in complex environments. The visualization part (if show_animation is True) illu
 import math
 import sys
 import matplotlib.pyplot as plt
+import numpy as np
 import pathlib
 
 from rrt import RRT
@@ -141,13 +142,13 @@ class RRTStar(RRT):
                     and new_node):  # if reaches goal
                 last_index = self.search_best_goal_node()
                 if last_index is not None:
-                    return self.generate_final_course(last_index)
+                    return self.smooth(self.generate_final_course(last_index))
 
         print("reached max iteration")
 
         last_index = self.search_best_goal_node()
         if last_index is not None:
-            return self.generate_final_course(last_index)
+            return self.smooth(self.generate_final_course(last_index))
 
         return None
 
@@ -315,6 +316,15 @@ class RRTStar(RRT):
                 node.cost = self.calc_new_cost(parent_node, node)
                 self.propagate_cost_to_leaves(node)
 
+    # Added for smoothing curve
+    def smooth(self, path):
+        # Keep start and end points the same (do not iterate over them)
+        # Otherwise, each point is the average of the point before and after it
+        for i in range(1, len(path) - 1):
+            path[i][0] = (path[i+1][0] + path[i-1][0]) / 2 # Smooth x coordinate
+            path[i][1] = (path[i+1][1] + path[i-1][1]) / 2 # Smooth y coordinate
+
+        return path
 
 # TODO Use the main to test your RRT* before integration, then modify this part to integrate it into the stack
 def main():
@@ -323,7 +333,7 @@ def main():
     # Define the list of virtual obstacles, see below for the entries
     # TODO define obstacles that make sense within the TurtleBot3's range
     
-    obstacle_list = [
+    obstacle_list_old = [
         (5, 5, 1),
         (3, 6, 2),
         (3, 8, 2),
@@ -331,6 +341,17 @@ def main():
         (7, 5, 2),
         (9, 5, 2),
         (8, 10, 1),
+        (6, 12, 1),
+    ]  # [x,y,size(radius)]
+
+    obstacle_list = [
+        (5, 5, 1),
+        (3, 6, 2),
+        (3, 8, 2),
+        (3, 10, 2),
+        (7, 5, 2),
+        (9, 5, 2),
+        (9, 11, 1),
         (6, 12, 1),
     ]  # [x,y,size(radius)]
 
