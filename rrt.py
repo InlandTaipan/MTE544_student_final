@@ -188,10 +188,10 @@ class RRT:
         if rnd is not None:
             plt.plot(rnd.x, rnd.y, "^k")
             if self.robot_radius > 0.0:
-                self.plot_circle(rnd.x, rnd.y, self.robot_radius, '-r')
+                self.plot_circle(rnd.x, rnd.y, self.robot_radius, '-r', label='_nolegend')
         for node in self.node_list:
             if node.parent:
-                plt.plot(node.path_x, node.path_y, "-g")
+                plt.plot(node.path_x, node.path_y, "-g", label='_nolegend')
 
         for (ox, oy, size) in self.obstacle_list:
             self.plot_circle(ox, oy, size)
@@ -203,10 +203,10 @@ class RRT:
                      [self.play_area.ymin, self.play_area.ymin,
                       self.play_area.ymax, self.play_area.ymax,
                       self.play_area.ymin],
-                     "-k")
+                     "-k", label='_nolegend')
 
-        plt.plot(self.start.x, self.start.y, "xr")
-        plt.plot(self.end.x, self.end.y, "xr")
+        plt.plot(self.start.x, self.start.y, "xb", label="Start Point")
+        plt.plot(self.end.x, self.end.y, "xr", label="End Point")
         plt.axis("equal")
         plt.axis([-2, 15, -2, 15])
         plt.grid(True)
@@ -218,7 +218,7 @@ class RRT:
         deg.append(0)
         xl = [x + size * math.cos(np.deg2rad(d)) for d in deg]
         yl = [y + size * math.sin(np.deg2rad(d)) for d in deg]
-        plt.plot(xl, yl, color)
+        plt.plot(xl, yl, color, label='_nolegend')
 
     @staticmethod
     def get_nearest_node_index(node_list, rnd_node):

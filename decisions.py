@@ -23,6 +23,9 @@ from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 
+import matplotlib.pyplot as plt
+from utilities import FileReader
+
 class decision_maker(Node):
     
     
@@ -41,7 +44,7 @@ class decision_maker(Node):
         self.reachThreshold=0.1
 
 
-        self.localizer=localization(rawSensors)
+        self.localizer=localization(kalmanFilter)
 
 
         self.goal = None
@@ -68,7 +71,7 @@ class decision_maker(Node):
 
         # hint: if you set the self.goal in here, you can bypass the rviz goal selector
         # this can be useful if you don't want to use the map
-        self.goal = [6, 10]
+        self.goal=self.planner.plan([0,0],[6,10])
     
     def designPathFor(self, msg: PoseStamped):
         
@@ -87,7 +90,7 @@ class decision_maker(Node):
         spin_once(self.localizer)
 
         if self.localizer.getPose() is  None:
-            print("waiting for odom msgs ....")
+            print("waiting for odom in timer callback msgs ....")
             return
         
         
@@ -101,9 +104,6 @@ class decision_maker(Node):
         else: 
             reached_goal=True if calculate_linear_error(self.localizer.getPose(), self.goal) <self.reachThreshold else False
 
-
-
-
         if reached_goal:
             print("reached goal")
             self.publisher.publish(vel_msg)
@@ -111,9 +111,38 @@ class decision_maker(Node):
             self.controller.PID_angular.logger.save_log()
             self.controller.PID_linear.logger.save_log()
             
+            self.planner.rrt_star.draw_graph()
+            plt.plot([x for (x, y) in self.goal], [y for (x, y) in self.goal], 'r--', label="Planned Path")
+            plt.grid(True)
+
+            filename = "robotPose.csv"
+            headers, values=FileReader(filename).read_file()
+            
+            time_list=[]
+        
+            first_stamp=values[0][-1]
+
+            for val in values:
+                time_list.append(val[-1] - first_stamp)
+
+            # Isolate x and y poses of robot from data
+            odom_x = [lin[-3] for lin in values]
+            odom_y = [lin[-2] for lin in values]
+
+            ekf_x = [lin[-5] for lin in values]
+            ekf_y = [lin[-4] for lin in values]
+
+            plt.plot(ekf_x, ekf_y, label = "EKF Trajectory")
+            plt.plot(odom_x, odom_y, label = "Odom (True) Trajectory")
+            plt.legend()
+            plt.title("X vs Y Trajectory")
+            plt.xlabel("X [m]")
+            plt.ylabel("Y [m]")
+            plt.show()
+
+
             self.goal = None
             print("waiting for the new position input, use 2D nav goal on map")
-
             return
         
         velocity, yaw_rate = self.controller.\
@@ -124,7 +153,9 @@ class decision_maker(Node):
         vel_msg.angular.z=yaw_rate
         
         self.publisher.publish(vel_msg)
-        self.publishPathOnRviz2(self.goal)
+
+        # Comment out if not using rviz2
+        # self.publishPathOnRviz2(self.goal)
 
 
 
@@ -175,8 +206,8 @@ def main(args=None):
         print(f"reached there successfully {DM.localizer.pose}")
         return
 
-    except e:
-        print("error")
+    except Exception as e:
+        print(e.format_exc())
         return 
 
 

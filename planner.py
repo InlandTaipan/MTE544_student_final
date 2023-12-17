@@ -52,7 +52,9 @@ class planner:
         goal=[6, 10],
         rand_area=[-2, 15],
         obstacle_list=self.obstacle_list,
-        expand_dis=1,
+        expand_dis=0.5,
+        path_resolution=0.5,
+        connect_circle_dist=50.0,
         robot_radius=0.8)
         
     
@@ -86,7 +88,7 @@ class planner:
         # For now the RRT* goes to a hard coded location
         # self.rrt_star.start = startPoseCart
         # self.rrt_star.goal = endPoseCart
-        path = self.rrt_star.planning(animation=show_animation)
+        path = self.rrt_star.planning(animation=False)
 
         end_time = time.time()
 
@@ -101,8 +103,21 @@ class planner:
         # or add it as a method to the original rrt.py 
 
         # The path was smoothened in rrt_star.py in the smooth() function
+        path.reverse() # reverse path to navigate in correct order
 
-        return path
+        if path is None:
+            print("Cannot find path")
+        else:
+            print("found path!!")
+
+            # Draw final path
+            if show_animation:
+                self.rrt_star.draw_graph()
+                plt.plot([x for (x, y) in path], [y for (x, y) in path], 'r--')
+                plt.grid(True)
+                plt.show()
+
+        return path[1:] # Don't return start of path (robot will be at start position already)
 
 
 if __name__=="__main__":

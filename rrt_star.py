@@ -361,8 +361,10 @@ def main():
         goal=[6, 10],
         rand_area=[-2, 15],
         obstacle_list=obstacle_list,
-        expand_dis=1,
-        robot_radius=0.8) # works when 0.5
+        expand_dis=0.5,
+        path_resolution=0.5,
+        connect_circle_dist=50.0,
+        robot_radius=0.8)
     
     # Search the path using RRT*
     path = rrt_star.planning(animation=show_animation)

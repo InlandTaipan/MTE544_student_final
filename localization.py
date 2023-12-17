@@ -27,7 +27,7 @@ odom_qos=QoSProfile(reliability=2, durability=2, history=1, depth=10)
 
 class localization(Node):
     
-    def __init__(self, type, loggerName="robotPose.csv", loggerHeaders=["imu_ax", "imu_ay", "kf_ax", "kf_ay","kf_vx","kf_w","kf_x", "kf_y","stamp"]):
+    def __init__(self, type, loggerName="robotPose.csv", loggerHeaders=["imu_ax", "imu_ay", "kf_ax", "kf_ay","kf_vx","kf_w","kf_x", "kf_y","odom_x", "odom_y", "stamp"]):
 
         super().__init__("localizer")
         
@@ -35,8 +35,10 @@ class localization(Node):
         self.pose=None
         
         if type==rawSensors:
-            self.initRawSensors();
+            print("Raw sensors")
+            self.initRawSensors()
         elif type==kalmanFilter:
+            print("Kalman filter")
             self.initKalmanfilter()
             self.kalmanInitialized = False
         else:
@@ -74,24 +76,27 @@ class localization(Node):
             # P=Q.copy()
 
             # My PQR Values
-            # TODO: Enter my own PQR values
             Q=0.2*np.identity(6) 
             R=0.8*np.identity(4)
-            P=np.zeros(6,6) # initial covariance is 0 because we have known starting state
+            P=np.zeros((6,6)) # initial covariance is 0 because we have known starting state
             
             self.kf=kalman_filter(P,Q,R, x)
             self.kalmanInitialized = True
         
-        dt = time.time() - self.timelast
+        # Instead of using system time here, use the time from the imu header 
+        # This produces better results because my computers real time factor is bad (~0.4)
+        #dt = time.time() - self.timelast
+        dt = Time.from_msg(imu_msg.header.stamp).nanoseconds/1E9 - self.timelast
 
-        self.timelast=time.time()
+        #self.timelast=time.time()
+        self.timelast = Time.from_msg(imu_msg.header.stamp).nanoseconds/1E9
 
 
         z=np.array([odom_msg.twist.twist.linear.x,
                     odom_msg.twist.twist.angular.z,
                     imu_msg.linear_acceleration.x,
                     imu_msg.linear_acceleration.y])
-        print(dt)
+        #print(dt)
         self.kf.predict(dt)
         self.kf.update(z)
         
@@ -103,11 +108,12 @@ class localization(Node):
                             odom_msg.header.stamp])
         
         
-        self.loc_logger.log_values([z[2], z[3], xhat[5], xhat[4]*xhat[3], xhat[4], xhat[3], xhat[0], xhat[1], Time.from_msg(imu_msg.header.stamp).nanoseconds])
+        # Added odometry logging to the robotPose.csv file
+        self.loc_logger.log_values([z[2], z[3], xhat[5], xhat[4]*xhat[3], xhat[4], xhat[3], xhat[0], xhat[1], odom_msg.pose.pose.position.x, odom_msg.pose.pose.position.y, Time.from_msg(imu_msg.header.stamp).nanoseconds])
         
-        print(f"{xhat[0]} and {xhat[1]} vs {odom_msg.pose.pose.position.x} vs {odom_msg.pose.pose.position.y}")
+        print(f"{xhat[0]} and {xhat[1]} vs {odom_msg.pose.pose.position.x} and {odom_msg.pose.pose.position.y}")
+   
     def odom_callback(self, pose_msg):
-        
         self.pose=[ pose_msg.pose.pose.position.x,
                     pose_msg.pose.pose.position.y,
                     euler_from_quaternion(pose_msg.pose.pose.orientation),
