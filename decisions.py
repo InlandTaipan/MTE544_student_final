@@ -71,8 +71,8 @@ class decision_maker(Node):
 
         # hint: if you set the self.goal in here, you can bypass the rviz goal selector
         # this can be useful if you don't want to use the map
-        self.goal=self.planner.plan([0,0],[6,10])
-    
+        self.goal=self.planner.plan((0,0),(6,10)) # Doesn't actually matter what is set here, check the trajectory intializer in planner.py instead
+
     def designPathFor(self, msg: PoseStamped):
         
         spin_once(self.localizer)
@@ -111,10 +111,13 @@ class decision_maker(Node):
             self.controller.PID_angular.logger.save_log()
             self.controller.PID_linear.logger.save_log()
             
-            self.planner.rrt_star.draw_graph()
+            # After goal is reached, generate graphs for the report
+            self.planner.rrt_star.draw_graph() # Draws the obstacles, the RRT and the start/goal points
+            # Plot the planned path
             plt.plot([x for (x, y) in self.goal], [y for (x, y) in self.goal], 'r--', label="Planned Path")
             plt.grid(True)
 
+            # Taken from the error plotter from the labs
             filename = "robotPose.csv"
             headers, values=FileReader(filename).read_file()
             
@@ -125,13 +128,15 @@ class decision_maker(Node):
             for val in values:
                 time_list.append(val[-1] - first_stamp)
 
-            # Isolate x and y poses of robot from data
+            # Isolate x and y odom poses of robot from logged data (hardcoded based on csv format)
             odom_x = [lin[-3] for lin in values]
             odom_y = [lin[-2] for lin in values]
 
+            # Isolate x and y ekf pose estimates of robot from data (hardcoded based on csv format)
             ekf_x = [lin[-5] for lin in values]
             ekf_y = [lin[-4] for lin in values]
 
+            # Plot EKF and Odom trajectories, and add legend/title/axis labels
             plt.plot(ekf_x, ekf_y, label = "EKF Trajectory")
             plt.plot(odom_x, odom_y, label = "Odom (True) Trajectory")
             plt.legend()
@@ -140,7 +145,7 @@ class decision_maker(Node):
             plt.ylabel("Y [m]")
             plt.show()
 
-
+            # Set goal to none and continue as normal
             self.goal = None
             print("waiting for the new position input, use 2D nav goal on map")
             return
@@ -207,6 +212,7 @@ def main(args=None):
         return
 
     except Exception as e:
+        # This doesnt actually work
         print(e.format_exc())
         return 
 

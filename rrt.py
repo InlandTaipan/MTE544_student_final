@@ -188,7 +188,7 @@ class RRT:
         if rnd is not None:
             plt.plot(rnd.x, rnd.y, "^k")
             if self.robot_radius > 0.0:
-                self.plot_circle(rnd.x, rnd.y, self.robot_radius, '-r', label='_nolegend')
+                self.plot_circle(rnd.x, rnd.y, self.robot_radius, '-r')
         for node in self.node_list:
             if node.parent:
                 plt.plot(node.path_x, node.path_y, "-g", label='_nolegend')

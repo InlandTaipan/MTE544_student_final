@@ -85,10 +85,8 @@ class localization(Node):
         
         # Instead of using system time here, use the time from the imu header 
         # This produces better results because my computers real time factor is bad (~0.4)
-        #dt = time.time() - self.timelast
         dt = Time.from_msg(imu_msg.header.stamp).nanoseconds/1E9 - self.timelast
 
-        #self.timelast=time.time()
         self.timelast = Time.from_msg(imu_msg.header.stamp).nanoseconds/1E9
 
 
