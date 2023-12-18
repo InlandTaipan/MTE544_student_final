@@ -68,7 +68,7 @@ class RRTStar(RRT):
                  expand_dis=30.0,
                  path_resolution=1.0,
                  goal_sample_rate=20,
-                 max_iter=5000, # Set iterations super high to ensure a solution is found
+                 max_iter=2000, # Set iterations super high to ensure a solution is found
                  connect_circle_dist=50.0, # Large circle because does not affect the time that much
                  search_until_max_iter=False,
                  robot_radius=0.8):

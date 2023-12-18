@@ -55,10 +55,10 @@ class planner:
         ]  # [x,y,size(radius)]
 
         self.rrt_star = RRTStar(
-        # start=[0, 0], # Corridor 1
-        # goal=[6, 10], # Corridor 1
-        start=[6, 10], # Corridor 2
-        goal=[0, 12], # Corridor 2
+        start=[0, 0], # Corridor 1
+        goal=[6, 10], # Corridor 1
+        # start=[6, 10], # Corridor 2
+        # goal=[0, 12], # Corridor 2
         # start=[0, 0], # Mines 1
         # goal=[6, 10], # Mines 1
         # start=[6, 10], # Mines 2
