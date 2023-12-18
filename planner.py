@@ -55,10 +55,10 @@ class planner:
         ]  # [x,y,size(radius)]
 
         self.rrt_star = RRTStar(
-        start=[0, 0], # Corridor 1
-        goal=[6, 10], # Corridor 1
-        # start=[6, 10], # Corridor 2
-        # goal=[0, 12], # Corridor 2
+        # start=[0, 0], # Corridor 1
+        # goal=[6, 10], # Corridor 1
+        start=[6, 10], # Corridor 2
+        goal=[0, 12], # Corridor 2
         # start=[0, 0], # Mines 1
         # goal=[6, 10], # Mines 1
         # start=[6, 10], # Mines 2
@@ -67,7 +67,7 @@ class planner:
         obstacle_list=corridor_obstacle_list,
         expand_dis=0.5, # Halved to enable robot to better path into hallways
         path_resolution=0.5, # Halved since expand distance was halved
-        connect_circle_dist=50.0,
+        connect_circle_dist=100.0,
         robot_radius=0.8)
         
     
